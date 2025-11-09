@@ -97,4 +97,14 @@ return { -- Fuzzy Finder (files, lsp, etc)
       require('telescope').load_extension 'frecency'
     end,
   },
+  {
+    'nvim-telescope/telescope-project.nvim',
+    dependencies = {
+      'nvim-telescope/telescope.nvim',
+    },
+    config = function()
+      require('telescope').load_extension 'project'
+      vim.keymap.set('n', '<leader>sp', ':Telescope project<CR>', { desc = '[S]earch [P]rojects' })
+    end,
+  },
 }

@@ -7,9 +7,6 @@ return { -- Autocompletion
     opts = {},
   },
   {
-    'giuxtaposition/blink-cmp-copilot',
-  },
-  {
     'saghen/blink.cmp',
     event = 'VimEnter',
     version = '1.*',
