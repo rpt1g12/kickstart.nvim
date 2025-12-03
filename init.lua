@@ -112,6 +112,7 @@ vim.o.confirm = true
 vim.keymap.set('n', '<tab>', '<cmd>bn<CR>', { desc = 'Go to [Tab] next buffer' })
 vim.keymap.set('n', '<S-tab>', '<cmd>bp<CR>', { desc = 'Go to [Tab] previous buffer' })
 vim.keymap.set('n', '<C-q>', ':bp<bar>sp<bar>bn<bar>bd<CR>', { desc = 'Close current buffer but not window', silent = true })
+vim.keymap.set('n', '<leader><C-q>', ':%bd<bar>e#<bar>bp<bar>bd<CR>', { desc = 'Close all other buffer but current', silent = true })
 vim.keymap.set('n', '<C-j>', vim.cmd.cnext, { desc = 'Go to next [J]ump in quickfix list' })
 vim.keymap.set('n', '<C-k>', vim.cmd.cprev, { desc = 'Go to previous [K]ump in quickfix list' })
 -- Set the working directory to the path of the current buffer.
@@ -227,6 +228,11 @@ vim.api.nvim_create_autocmd('BufWinEnter', {
 vim.filetype.add {
   extension = {
     asl = 'json',
+  },
+}
+vim.filetype.add {
+  extension = {
+    testsql = 'testsql',
   },
 }
 

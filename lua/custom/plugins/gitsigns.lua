@@ -16,6 +16,22 @@ return { -- Adds git related signs to the gutter, as well as utilities for manag
         opts.buffer = bufnr
         vim.keymap.set(mode, l, r, opts)
       end
+      -- Navigation
+      map('n', ']c', function()
+        if vim.wo.diff then
+          vim.cmd.normal { ']c', bang = true }
+        else
+          gitsigns.nav_hunk 'next'
+        end
+      end, { desc = 'Jump to next git [c]hange' })
+
+      map('n', '[c', function()
+        if vim.wo.diff then
+          vim.cmd.normal { '[c', bang = true }
+        else
+          gitsigns.nav_hunk 'prev'
+        end
+      end, { desc = 'Jump to previous git [c]hange' })
       -- Actions
       -- Visual
       map('v', '<leader>hr', function()
