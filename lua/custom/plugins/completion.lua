@@ -1,12 +1,5 @@
 return { -- Autocompletion
   {
-    'zbirenbaum/copilot.lua',
-    dependencies = {
-      'copilotlsp-nvim/copilot-lsp',
-    },
-    opts = {},
-  },
-  {
     'saghen/blink.cmp',
     event = 'VimEnter',
     version = '1.*',
@@ -38,7 +31,7 @@ return { -- Autocompletion
         opts = {},
       },
       'folke/lazydev.nvim',
-      'giuxtaposition/blink-cmp-copilot',
+      -- 'giuxtaposition/blink-cmp-copilot',
     },
     --- @module 'blink.cmp'
     --- @type blink.cmp.Config
@@ -84,21 +77,23 @@ return { -- Autocompletion
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets', 'lazydev', 'buffer', 'copilot' },
+        -- default = { 'lsp', 'path', 'snippets', 'lazydev', 'buffer', 'copilot' },
+        default = { 'lsp', 'path', 'snippets', 'lazydev', 'buffer' },
         per_filetype = {
-          sql = { 'dadbod', 'buffer', 'copilot' },
+          -- sql = { 'dadbod', 'buffer', 'copilot' },
+          sql = { 'dadbod', 'buffer' },
           -- optionally inherit from the `default` sources
           lua = { inherit_defaults = true, 'lazydev' },
         },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
           dadbod = { module = 'vim_dadbod_completion.blink' },
-          copilot = {
-            name = 'copilot',
-            module = 'blink-cmp-copilot',
-            score_offset = 100,
-            async = true,
-          },
+          -- copilot = {
+          --   name = 'copilot',
+          --   module = 'blink-cmp-copilot',
+          --   score_offset = 100,
+          --   async = true,
+          -- },
         },
       },
 

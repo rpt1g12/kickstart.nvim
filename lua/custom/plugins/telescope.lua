@@ -37,9 +37,14 @@ return { -- Fuzzy Finder (files, lsp, etc)
           },
         },
         defaults = {
-          path_display = { 'smart', 'filename_first' },
+          path_display = { 'truncate', 'filename_first', 'smart' },
           mappings = {
-            i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+            n = { ['<c-d>'] = require('telescope.actions').delete_buffer },
+            i = {
+              ['<c-h>'] = 'which_key',
+              ['<c-d>'] = require('telescope.actions').delete_buffer,
+              ['<c-enter>'] = 'to_fuzzy_refine',
+            },
           },
         },
       }

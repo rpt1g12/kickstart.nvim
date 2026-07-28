@@ -107,6 +107,9 @@ vim.o.scrolloff = 10
 -- See `:help 'confirm'`
 vim.o.confirm = true
 
+-- Highlight column 80 with different colour
+vim.o.colorcolumn = '81,161,241,321,401,481,561,641,721,801'
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 vim.keymap.set('n', '<tab>', '<cmd>bn<CR>', { desc = 'Go to [Tab] next buffer' })
@@ -126,6 +129,13 @@ vim.keymap.set('n', '<Leader>*', [[:%s/\<<C-r><C-w>\>//g<Left><Left>]])
 
 vim.keymap.set('v', '<leader>jq', ":'<'>!jq .<CR>", { desc = 'Format current selection with jq' })
 -- vim.keymap.set('v', '<leader>jo', "<cmd>'<'>s/{/object(/g <bar> *s/}/)/g <bar> *s/\"/'/g <bar> *s/:/,/g<CR>", { desc = 'Convert JSON to Object' })
+
+vim.keymap.set(
+  'v',
+  '<leader>vl',
+  "<cmd>'<,'>s,\\([a-z.|0-9A-Z\\-]*\\)$,[\\1](https://backoffice.onvesper.com/dce.realm/users/customers/\\1/licences) <bar> '<,'>s,/.*\zs|\ze,%7C <CR>",
+  { desc = 'Replace visual selection with customer licence link' }
+)
 
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
@@ -207,6 +217,24 @@ vim.api.nvim_create_autocmd('BufWinEnter', {
   callback = function()
     vim.keymap.set('n', '<leader>gp', function()
       local currentBranchPr = vim.fn.system("gh pr view --json number --jq '.number'"):gsub('%s+', '')
+      -- If currentBranchPr is not just numbers, then make empty commit and push to origin to create a PR, then get the PR number
+      if not currentBranchPr:match '^%d+$' then
+        local currentBranch = vim.fn.system('git rev-parse --abrev-ref HEAD'):gsub('%s+', '')
+        currentBranch = vim.fn.input('No PR found for current branch. Creting one with title ', currentBranch)
+        local commitMessage = 'Empty commit to trigger PR'
+        local output = vim.fn.system('git commit --allow-empty -m "' .. commitMessage .. '" && git push')
+        if vim.v.shell_error ~= 0 then
+          print('Error creating empty commit and pushing!! ' .. output)
+          return
+        end
+        output = vim.fn.system("gh pr create --title '" .. currentBranch .. "' --body '**WHAT**\n\n**WHY**\n\n'")
+        print(output)
+        if vim.v.shell_error ~= 0 then
+          print 'Error creating PR!!'
+          return
+        end
+        currentBranchPr = vim.fn.system("gh pr view --json number --jq '.number'"):gsub('%s+', '')
+      end
       local prNumber = vim.fn.input('Enter PR number: ', currentBranchPr)
       -- Check if we got any input
       if prNumber == nil or prNumber == '' then
@@ -214,11 +242,17 @@ vim.api.nvim_create_autocmd('BufWinEnter', {
         return
       end
       local patchStep = vim.fn.input('Enter patch step [0] to 3: ', '0')
-      local output = vim.fn.system('generate_patch.sh pr_' .. prNumber .. ' ' .. patchStep)
+      local output = vim.fn.system('generate_patch.sh pr_' .. prNumber .. ' ' .. patchStep .. ' --run --db rafa')
+      -- This function removes the ANSI escape sequences
+      function clean_ansi(str)
+        -- The pattern finds the ESC character followed by the format codes
+        return str:gsub('\27%[[%d;]*m', ''):gsub('%^%[[%d;]*m', '')
+      end
+      print(clean_ansi(output))
       if vim.v.shell_error == 0 then
         print 'Patch file updated successfully.'
       else
-        print('Error generating patch file: ' .. output)
+        print 'Error generating patch file!!'
       end
     end, { buffer = true, desc = 'Generate patch file for ds-dwh repository' })
   end,
