@@ -184,6 +184,10 @@ return { -- Fuzzy Finder (files, lsp, etc)
         extensions = {
           frecency = {
             show_filter_column = false,
+            -- Remove entries for deleted files (e.g. removed worktrees) without asking.
+            -- The confirmation is a ui-select picker that races the frecency picker
+            -- and leaves a stray "A" in its prompt.
+            db_safe_mode = false,
           },
         },
       }
