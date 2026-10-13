@@ -62,6 +62,22 @@ return { -- Autocompletion
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
+        ['<Tab>'] = {
+          function(cmp)
+            -- 1. If blink popup menu is open, select next item
+            if cmp.is_visible() then
+              return cmp.select_next()
+            end
+
+            -- 2. If Copilot ghost text is showing, accept it!
+            if vim.fn['copilot#GetDisplayedSuggestion']().text ~= '' then
+              vim.api.nvim_feedkeys(vim.fn['copilot#Accept'](), 'i', true)
+              return true
+            end
+          end,
+          'snippet_forward', -- 3. Jump forward in snippet
+          'fallback', -- 4. Normal tab/indent
+        },
       },
 
       appearance = {

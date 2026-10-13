@@ -8,6 +8,10 @@ return {
     init = function()
       vim.g.vimwiki_listsyms = '✗○◐●✓'
       vim.g.vimwiki_table_mappings = 0
+
+      -- Add this line to disable header mappings ('-' and '+')
+      vim.g.vimwiki_key_mappings = { headers = 0 }
+
       vim.g.vimwiki_list = {
         {
           path = '~/vimwiki',
@@ -28,16 +32,17 @@ return {
     'stevearc/oil.nvim',
     ---@module 'oil'
     ---@type oil.SetupOpts
-    opts = {},
-    -- Optional dependencies
     dependencies = { { 'nvim-mini/mini.icons', opts = {} } },
-    -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
-    -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
     lazy = false,
     config = function()
       require('oil').setup {
-        vim.keymap.set('n', '-', '<CMD>Oil<CR>', { desc = 'Open parent directory' }),
+        keymaps = {
+          ['<Esc><Esc>'] = 'actions.close', -- Press Esc twice quickly to exit Oil
+          ['q'] = 'actions.close', -- Keep 'q' as an single-key alternative
+        },
       }
+
+      vim.keymap.set('n', '-', '<CMD>Oil<CR>', { desc = 'Open parent directory' })
     end,
   },
   {
