@@ -34,6 +34,9 @@ return { -- Adds git related signs to the gutter, as well as utilities for manag
       end, { desc = 'Jump to previous git [c]hange' })
       -- Actions
       -- Visual
+      map('v', '<leader>hs', function()
+        gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
+      end, { desc = 'git [s]tage hunk' })
       map('v', '<leader>hr', function()
         gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
       end, { desc = 'git [r]eset hunk' })
@@ -49,6 +52,18 @@ return { -- Adds git related signs to the gutter, as well as utilities for manag
       map('n', '<leader>hD', function()
         gitsigns.diffthis '@'
       end, { desc = 'git [D]iff against last commit' })
+      map('n', '<leader>hm', function()
+        -- Toggle signs/hunks for all buffers between "vs main" and "vs index"
+        vim.g.gitsigns_vs_main = not vim.g.gitsigns_vs_main
+        if vim.g.gitsigns_vs_main then
+          local base = require('custom.git').default_branch()
+          gitsigns.change_base(base, true)
+          print('gitsigns: diffing against ' .. base)
+        else
+          gitsigns.reset_base(true)
+          print 'gitsigns: diffing against index'
+        end
+      end, { desc = 'git toggle base: [m]ain / index' })
       -- Toggles
       map('n', '<leader>tb', gitsigns.toggle_current_line_blame, { desc = '[T]oggle git show [b]lame line' })
       map('n', '<leader>tD', gitsigns.preview_hunk_inline, { desc = '[T]oggle git show [D]eleted' })
