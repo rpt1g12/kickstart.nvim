@@ -209,55 +209,6 @@ vim.api.nvim_create_autocmd('BufWinEnter', {
   end,
 })
 
--- NOTE: Allows to generate patches when in directory /Users/Pere87666/code/DiceTechnology/ds-dwh
-vim.api.nvim_create_autocmd('BufWinEnter', {
-  group = vim.api.nvim_create_augroup('generate_patch_on_save', { clear = true }),
-  desc = 'Generate patch file on save when in ds-dwh repository',
-  pattern = '*/DiceTechnology/ds-dwh/*',
-  callback = function()
-    vim.keymap.set('n', '<leader>gp', function()
-      local currentBranchPr = vim.fn.system("gh pr view --json number --jq '.number'"):gsub('%s+', '')
-      -- If currentBranchPr is not just numbers, then make empty commit and push to origin to create a PR, then get the PR number
-      if not currentBranchPr:match '^%d+$' then
-        local currentBranch = vim.fn.system('git rev-parse --abrev-ref HEAD'):gsub('%s+', '')
-        currentBranch = vim.fn.input('No PR found for current branch. Creting one with title ', currentBranch)
-        local commitMessage = 'Empty commit to trigger PR'
-        local output = vim.fn.system('git commit --allow-empty -m "' .. commitMessage .. '" && git push')
-        if vim.v.shell_error ~= 0 then
-          print('Error creating empty commit and pushing!! ' .. output)
-          return
-        end
-        output = vim.fn.system("gh pr create --title '" .. currentBranch .. "' --body '**WHAT**\n\n**WHY**\n\n'")
-        print(output)
-        if vim.v.shell_error ~= 0 then
-          print 'Error creating PR!!'
-          return
-        end
-        currentBranchPr = vim.fn.system("gh pr view --json number --jq '.number'"):gsub('%s+', '')
-      end
-      local prNumber = vim.fn.input('Enter PR number: ', currentBranchPr)
-      -- Check if we got any input
-      if prNumber == nil or prNumber == '' then
-        print 'No PR number provided. Aborting patch generation.'
-        return
-      end
-      local patchStep = vim.fn.input('Enter patch step [0] to 3: ', '0')
-      local output = vim.fn.system('generate_patch.sh pr_' .. prNumber .. ' ' .. patchStep .. ' --run --db rafa')
-      -- This function removes the ANSI escape sequences
-      function clean_ansi(str)
-        -- The pattern finds the ESC character followed by the format codes
-        return str:gsub('\27%[[%d;]*m', ''):gsub('%^%[[%d;]*m', '')
-      end
-      print(clean_ansi(output))
-      if vim.v.shell_error == 0 then
-        print 'Patch file updated successfully.'
-      else
-        print 'Error generating patch file!!'
-      end
-    end, { buffer = true, desc = 'Generate patch file for ds-dwh repository' })
-  end,
-})
-
 -- Setup custom filetype mappings
 vim.filetype.add {
   extension = {
@@ -383,10 +334,8 @@ require('lazy').setup({
     opts = {
       notify_on_error = false,
       format_on_save = function(bufnr)
-        -- Disable "format_on_save lsp_fallback" for languages that don't
-        -- have a well standardized coding style. You can add additional
-        -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
+        -- Keep SQL formatting manual: <leader>f uses the DWH CLI formatter.
+        local disable_filetypes = { c = true, cpp = true, sql = true }
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         else
@@ -396,8 +345,16 @@ require('lazy').setup({
           }
         end
       end,
+      formatters = {
+        dwh_sql_format = {
+          command = 'dwh',
+          args = { 'sql', 'format', '--path', '$FILENAME', '--write' },
+          stdin = false,
+        },
+      },
       formatters_by_ft = {
         lua = { 'stylua' },
+        sql = { 'dwh_sql_format' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -439,8 +396,6 @@ require('lazy').setup({
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
 
-  -- NOTE: Next step on your Neovim journey: Add/Configure additional plugins for Kickstart
-  --
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
