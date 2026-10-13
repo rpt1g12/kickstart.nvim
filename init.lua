@@ -434,7 +434,11 @@ require('lazy').setup({
       lazy = '💤 ',
     },
   },
+  -- custom.reload handles plugin spec changes on save; skip lazy's own "Config Change Detected" popup.
+  change_detection = { notify = false },
 })
+
+require('custom.reload').setup()
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
